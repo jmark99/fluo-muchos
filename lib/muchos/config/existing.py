@@ -16,9 +16,11 @@
 #
 
 from .base import BaseConfig
-
+import logging
 
 class ExistingDeployConfig(BaseConfig):
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+
     def __init__(
         self,
         deploy_path,

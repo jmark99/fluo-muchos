@@ -17,9 +17,7 @@
 # This file will be generated for you if use the 'launch' command to start EC2 instances
 # Below is expected format for each line:
 # <Hostname> <Private IP> [<Public IP>]
-leader1 10.0.0.0 23.0.0.0
-leader2 10.0.0.1
-worker1 10.0.0.2
-worker2 10.0.0.3
-worker3 10.0.0.4
-worker4 10.0.0.5
+[accumulo-cluster]
+leader1 10.113.10.25 
+worker1 10.113.10.90
+worker2 10.113.10.182

@@ -28,6 +28,7 @@ from .decorators import (
     is_valid,
 )
 from .validators import is_in
+import logging
 
 SERVICES = [
     "zookeeper",
@@ -187,6 +188,8 @@ class BaseConfig(ConfigParser, metaclass=ABCMeta):
         self.checksums_path = checksums_path
         self.checksums_d = None
         self._init_nodes()
+
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
 
     def ansible_host_vars(self):
         return dict(
