@@ -31,11 +31,10 @@ def DeployConfig(
     templates_path,
     cluster_name,
 ):
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
     c = ConfigParser()
     c.read(config_path)
     cluster_type = c.get("general", "cluster_type")
-    logging.debug(f"cluster_type:   {cluster_type}")
 
     if cluster_type == "existing":
         return ExistingDeployConfig(

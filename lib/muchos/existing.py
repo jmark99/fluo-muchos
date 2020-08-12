@@ -26,7 +26,7 @@ import logging
 
 
 class ExistingCluster:
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
 
     def __init__(self, config):
         self.config = config
@@ -56,12 +56,12 @@ class ExistingCluster:
         # for k, v in play_vars.items():
         #     logging.debug(f"  {k:20s} : {v}")
 
-        logging.debug(f"HOST_VARS: ")
+        # logging.debug(f"HOST_VARS: ")
         for k, v in host_vars.items():
             host_vars[k] = self.config.resolve_value(k, default=v)
             ##logging.debug(f"  {k:20s} : {host_vars[k]}")
 
-        logging.debug("PLAY_VARS:")            
+        # logging.debug("PLAY_VARS:")
         for k, v in play_vars.items():
             play_vars[k] = self.config.resolve_value(k, default=v)
             ##logging.debug(f"  {k:20s} : {play_vars[k]}")
@@ -92,7 +92,7 @@ class ExistingCluster:
                 print("- import_playbook: docker.yml", file=site_file)
 
         ansible_conf = path.join(config.deploy_path, "ansible/conf")
-        logging.debug(f"ansible_conf:  {ansible_conf}")
+        #logging.debug(f"ansible_conf:  {ansible_conf}")
 
         with open(path.join(ansible_conf, "hosts"), "w") as hosts_file:
             logging.debug(f"Open HOSTS_FILE: {hosts_file.name}")
@@ -173,20 +173,21 @@ class ExistingCluster:
                 file=hosts_file,
             )
 
-            # print("\n[nodes]", file=hosts_file)
-            # for (private_ip, hostname) in config.get_private_ip_hostnames():
-            #     print(
-            #         "{0} ansible_ssh_host={1} node_type={2}".format(
-            #             hostname, private_ip, config.node_type(hostname)
-            #         ),
-            #         file=hosts_file,
-            #     )
+            print("\n[nodes]", file=hosts_file)
+            for (private_ip, hostname) in config.get_private_ip_hostnames():
+                logging.debug(f"priviate_ip: {private_ip}; hostname: {hostname}")
+                logging.debug(f"config.node_type({hostname}): {config.node_type(hostname)}")
+                print(
+                    "{0} ansible_ssh_host={1} node_type={2}".format(
+                        hostname, private_ip, config.node_type(hostname)
+                    ),
+                    file=hosts_file,
+                )
 
-            # print("\n[all:vars]", file=hosts_file)
-            # for (name, value) in sorted(host_vars.items()):
-            #     print("{0} = {1}".format(name, value), file=hosts_file)
+            print("\n[all:vars]", file=hosts_file)
+            for (name, value) in sorted(host_vars.items()):
+                print("{0} = {1}".format(name, value), file=hosts_file)
 
-        #logging.debug(f'OPEN {path.join(config.deploy_path, "ansible/group_vars/all")} for writing')
         with open(
             path.join(config.deploy_path, "ansible/group_vars/all"), "w"
         ) as play_vars_file:
@@ -195,38 +196,37 @@ class ExistingCluster:
                 print("{0}: {1}".format(name, value), file=play_vars_file)
 
         # copy keys file to ansible/conf (if it exists)
-        # conf_keys = path.join(config.deploy_path, "conf/keys")
-        # logging.debug(f"conf_keys:    {conf_keys}")
-        # ansible_keys = path.join(ansible_conf, "keys")
-        # logging.debug(f"ansible_keys:    {ansible_keys}")
-        # if path.isfile(conf_keys):
-        #     shutil.copyfile(conf_keys, ansible_keys)
-        #     logging.debug(f"copyfile({conf_keys}, {ansible_keys}")
-        # else:
-        #     logging.debug(f"open {ansible_keys}")
-        #     open(ansible_keys, "w").close()
+        conf_keys = path.join(config.deploy_path, "conf/keys")
+        logging.debug(f"conf_keys:    {conf_keys}")
+        ansible_keys = path.join(ansible_conf, "keys")
+        logging.debug(f"ansible_keys:    {ansible_keys}")
+        if path.isfile(conf_keys):
+            shutil.copyfile(conf_keys, ansible_keys)
+            logging.debug(f"copyfile({conf_keys}, {ansible_keys}")
+        else:
+            logging.debug(f"open {ansible_keys}")
+            open(ansible_keys, "w").close()
 
         cmd = "rsync -az --delete -e \"ssh -o 'StrictHostKeyChecking no'\""
         logging.debug("Run Command:")
-        #logging.debug(f'{cmd} {path.join(config.deploy_path, "ansible")} {config.get("general", "cluster_user")}@{config.get_proxy_ip()}:{config.user_home()}')
-        logging.debug(f'{cmd} ')
-        # subprocess.call(
-        #     "{cmd} {src} {usr}@{ldr}:{tdir}".format(
-        #         cmd=cmd,
-        #         src=path.join(config.deploy_path, "ansible"),
-        #         usr=config.get("general", "cluster_user"),
-        #         ldr=config.get_proxy_ip(),
-        #         tdir=config.user_home(),
-        #     ),
-        #     shell=True,
-        #)
+        logging.debug(f'{cmd} {path.join(config.deploy_path, "ansible")} {config.get("general", "cluster_user")}@{config.get_proxy_ip()}:{config.user_home()}')
+        subprocess.call(
+            "{cmd} {src} {usr}@{ldr}:{tdir}".format(
+                cmd=cmd,
+                src=path.join(config.deploy_path, "ansible"),
+                usr=config.get("general", "cluster_user"),
+                ldr=config.get_proxy_ip(),
+                tdir=config.user_home(),
+            ),
+            shell=True,
+        )
 
-        # self.exec_on_proxy_verified(
-        #     "{0}/ansible/scripts/install_ansible.sh".format(
-        #         config.user_home()
-        #     ),
-        #     opts="-t",
-        # )
+        self.exec_on_proxy_verified(
+            "{0}/ansible/scripts/install_ansible.sh".format(
+                config.user_home()
+            ),
+            opts="-t",
+        )
 
 
 
@@ -237,15 +237,19 @@ class ExistingCluster:
 
         self.sync()
 
-        # conf_upload = path.join(config.deploy_path, "conf/upload")
-        # cluster_tarballs = "{0}/tarballs".format(config.user_home())
-        # self.exec_on_proxy_verified("mkdir -p {0}".format(cluster_tarballs))
-        # for f in listdir(conf_upload):
-        #     tarball_path = path.join(conf_upload, f)
-        #     if path.isfile(tarball_path) and tarball_path.endswith("gz"):
-        #         self.send_to_proxy(tarball_path, cluster_tarballs)
+        conf_upload = path.join(config.deploy_path, "conf/upload")
+        logging.debug(f"conf_upload: {conf_upload}")
+        cluster_tarballs = "{0}/tarballs".format(config.user_home())
+        logging.debug(f"cluster_tarballs: {cluster_tarballs}")
+        self.exec_on_proxy_verified("mkdir -p {0}".format(cluster_tarballs))
+        for f in listdir(conf_upload):
+            logging.debug(f"f in listdir: {f}")
+            tarball_path = path.join(conf_upload, f)
+            logging.debug(f"tarball_path: {tarball_path}")
+            if path.isfile(tarball_path) and tarball_path.endswith("gz"):
+                self.send_to_proxy(tarball_path, cluster_tarballs)
 
-        # self.execute_playbook("site.yml")
+        self.execute_playbook("site.yml")
 
     @staticmethod
     def status():
@@ -341,12 +345,20 @@ class ExistingCluster:
 
     def execute_playbook(self, playbook):
         print("Executing '{0}' playbook".format(playbook))
+        logging.debug("Executing '{0}' playbook".format(playbook))
+
+        azure_proxy_host = None
         azure_proxy_host = self.config.get("azure", "azure_proxy_host")
+        logging.debug(f"azure_proxy_host: {azure_proxy_host}")
         var_azure_proxy_host = (
             "_"
             if (azure_proxy_host is None or azure_proxy_host.strip() == "")
             else azure_proxy_host
         )
+        logging.debug(f"azure_proxy_host: >{var_azure_proxy_host}<")
+
+        logging.debug(f"time -p ansible-playbook {self.config.user_home()}/ansible/{playbook}")
+        logging.debug(f"--extra-vars 'azure_proxy_host={var_azure_proxy_host}'")
         self.exec_on_proxy_verified(
             "time -p ansible-playbook {base}/ansible/{playbook} "
             "--extra-vars 'azure_proxy_host={var_azure_proxy_host}'".format(
@@ -358,6 +370,7 @@ class ExistingCluster:
         )
 
     def send_to_proxy(self, path, target, skip_if_exists=True):
+        logging.debug(f"Copying {path} to proxy...")
         print("Copying to proxy: ", path)
         cmd = "scp -o 'StrictHostKeyChecking no'"
         if skip_if_exists:
@@ -394,39 +407,39 @@ class ExistingCluster:
         logging.debug(f"existing::perform({action})...")
         if action == "launch":
             self.launch()
-        # elif action == "status":
-        #     self.status()
-        # elif action == "sync":
-        #     self.sync()
+        elif action == "status":
+            self.status()
+        elif action == "sync":
+            self.sync()
         elif action == "setup":
             self.setup()
-        # elif action == "start":
-        #     self.start()
-        # elif action == "stop":
-        #     self.stop()
-        # elif action == "ssh":
-        #     self.ssh()
-        # elif action == "wipe":
-        #     self.wipe()
-        # elif action in ("kill", "cancel_shutdown"):
-        #     if not path.isfile(self.config.hosts_path):
-        #         exit(
-        #             "Hosts file does not exist for cluster: "
-        #             + self.config.hosts_path
-        #         )
-        #     elif action == "kill":
-        #         print(
-        #             "Killing all processes started by Muchos "
-        #             "on {0} cluster".format(self.config.cluster_name)
-        #         )
-        #     elif action == "cancel_shutdown":
-        #         print(
-        #             "Cancelling automatic shutdown of {0} cluster".format(
-        #                 self.config.cluster_name
-        #             )
-        #         )
-        #     self.execute_playbook(action + ".yml")
-        # elif action == "terminate":
-        #     self.terminate()
+        elif action == "start":
+            self.start()
+        elif action == "stop":
+            self.stop()
+        elif action == "ssh":
+            self.ssh()
+        elif action == "wipe":
+            self.wipe()
+        elif action in ("kill", "cancel_shutdown"):
+            if not path.isfile(self.config.hosts_path):
+                exit(
+                    "Hosts file does not exist for cluster: "
+                    + self.config.hosts_path
+                )
+            elif action == "kill":
+                print(
+                    "Killing all processes started by Muchos "
+                    "on {0} cluster".format(self.config.cluster_name)
+                )
+            elif action == "cancel_shutdown":
+                print(
+                    "Cancelling automatic shutdown of {0} cluster".format(
+                        self.config.cluster_name
+                    )
+                )
+            self.execute_playbook(action + ".yml")
+        elif action == "terminate":
+            self.terminate()
         else:
             print("ERROR - Unknown action:", action)

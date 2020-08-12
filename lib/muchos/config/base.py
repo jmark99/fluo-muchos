@@ -189,7 +189,7 @@ class BaseConfig(ConfigParser, metaclass=ABCMeta):
         self.checksums_d = None
         self._init_nodes()
 
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
 
     def ansible_host_vars(self):
         return dict(
@@ -291,7 +291,9 @@ class BaseConfig(ConfigParser, metaclass=ABCMeta):
 
     def _init_nodes(self):
         self.node_d = {}
+        logging.debug(f"_init_nodes(): node_d: {self.node_d}")
         for (hostname, value) in self.items("nodes"):
+            logging.debug(f"hostname: {hostname} ; value: {value}")
             if hostname in self.node_d:
                 exit(
                     "Hostname {0} already exists twice in nodes".format(
@@ -309,6 +311,7 @@ class BaseConfig(ConfigParser, metaclass=ABCMeta):
                         )
                     )
             self.node_d[hostname] = service_list
+            logging.debug(f"node_d[{hostname}] = {self.node_d[hostname]}")
 
     @abstractmethod
     @ansible_play_var

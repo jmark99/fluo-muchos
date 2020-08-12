@@ -19,7 +19,7 @@ from .base import BaseConfig
 import logging
 
 class ExistingDeployConfig(BaseConfig):
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
 
     def __init__(
         self,

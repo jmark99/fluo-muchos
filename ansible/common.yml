@@ -23,10 +23,12 @@
     - import_tasks: roles/proxy/tasks/main.yml
     - import_tasks: roles/proxy/tasks/download.yml
       when: download_software
+
 - hosts: nodes
   become: yes
   tasks:
     - import_tasks: roles/common/tasks/hosts.yml
+
 - hosts: all
   become: yes
   roles:
@@ -35,15 +37,5 @@
     - import_tasks: roles/common/tasks/ssh.yml
     - import_tasks: roles/common/tasks/os.yml
 
-    - block:
-      - import_tasks: roles/common/tasks/azure.yml
-      - import_tasks: roles/common/tasks/azure_oms.yml
-        when: az_oms_integration_needed
-      - import_tasks: roles/common/tasks/azure_oms_selinux.yml
-        when: az_oms_integration_needed
-      when: cluster_type == 'azure'
-
-    - import_tasks: roles/common/tasks/ec2.yml
-      when: cluster_type == 'ec2'
     - import_tasks: roles/common/tasks/existing.yml
       when: cluster_type == 'existing'

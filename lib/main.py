@@ -25,7 +25,7 @@ import logging
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
     logging.debug("Starting main.py...")
     deploy_path = environ.get("MUCHOS_HOME")
     logging.debug(f"deploy_path:    {deploy_path}")
@@ -58,13 +58,11 @@ def main():
     (opts, action, args) = retval
     logging.debug(f"opts:           {opts}")
     logging.debug(f"actions:        {action}")
-    logging.debug(f"args:           {args}")
 
     hosts_path = path.join(hosts_dir, opts.cluster)
     logging.debug(f"hosts_path:     {hosts_path}")
 
     templates_path = path.join(deploy_path, "conf/templates/")
-    logging.debug(f"templates_path: {templates_path}")
 
     config = DeployConfig(
         deploy_path,
@@ -88,9 +86,6 @@ def main():
             from muchos.existing import ExistingCluster
 
             cluster = ExistingCluster(config)
-            logging.debug(f"cluster:  {cluster.config}")
-            for item in cluster.config:
-                logging.debug(f"cluster: {item}")
             cluster.perform(action)
         else:
             exit("Unknown cluster_type: " + cluster_type)
