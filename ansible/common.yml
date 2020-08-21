@@ -18,24 +18,27 @@
 - hosts: proxy
   become: yes
   roles:
-    - proxy
+    - { role: proxy, tags: ['common']}
   tasks:
     - import_tasks: roles/proxy/tasks/main.yml
     - import_tasks: roles/proxy/tasks/download.yml
       when: download_software
+  tags: ['common']
 
 - hosts: nodes
   become: yes
   tasks:
     - import_tasks: roles/common/tasks/hosts.yml
+  tags: ['common']
 
 - hosts: all
   become: yes
   roles:
-    - common
+    - {role: common, tags: ['common']}
   tasks:
     - import_tasks: roles/common/tasks/ssh.yml
     - import_tasks: roles/common/tasks/os.yml
 
     - import_tasks: roles/common/tasks/existing.yml
       when: cluster_type == 'existing'
+  tags: ['common']

@@ -19,24 +19,29 @@
   tasks:
     - import_tasks: roles/accumulo/tasks/download.yml
       when: download_software
+
 - hosts: all:!{{ azure_proxy_host }}
   roles:
     - accumulo
+
 - hosts: accumulomaster[0]
   tasks:
     - import_tasks: roles/accumulo/tasks/init-accumulo.yml
   handlers:
     - import_tasks: roles/accumulo/handlers/init-accumulo.yml
+
 - hosts: all:!{{ azure_proxy_host }}
   tasks:
     - import_tasks: roles/accumulo/tasks/add-adlsgen2.yml
       when: cluster_type == 'azure' and accumulo_version is version('2.0.0','>=') and accumulo_version is version('2.1.0','<') and use_adlsg2
+
 - hosts: accumulomaster[0]
   tasks:
     - import_tasks: roles/accumulo/tasks/init-adlsgen2.yml
       when: cluster_type == 'azure' and accumulo_version is version('2.0.0','>=') and accumulo_version is version('2.1.0','<') and use_adlsg2
   handlers:
     - import_tasks: roles/accumulo/handlers/init-adlsgen2.yml
+
 - hosts: accumulo
   tasks:
     - name: "start accumulo 1.0"
@@ -44,6 +49,7 @@
       register: start_result
       changed_when: "'Starting' in start_result.stdout"
       when: accumulo_major_version == '1' and not use_systemd
+
 - hosts: workers
   tasks:
     - name: "start accumulo 2.0 tablet servers"
@@ -51,6 +57,7 @@
       register: start_result
       changed_when: "'Starting' in start_result.stdout"
       when: accumulo_major_version == '2' and not use_systemd
+
 - hosts: accumulomaster
   tasks:
     - name: "start accumulo 2.0 master, monitor, gc & tracer"
@@ -63,6 +70,7 @@
         - gc
         - tracer
       when: accumulo_major_version == '2' and not use_systemd
+
 - hosts: accumulomaster
   tasks:
     - name: "install and start all the accumulo services using systemd"

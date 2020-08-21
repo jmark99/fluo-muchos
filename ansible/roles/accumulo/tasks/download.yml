@@ -19,6 +19,7 @@
 - name: "check if Accumulo tarball was uploaded to proxy"
   stat: path={{ tarballs_dir }}/{{ accumulo_tarball }}
   register: accumulo
+  
 - name: "download Accumulo tarball to proxy"
   get_url: url={{ item.urlp }}/{{ item.fn }} dest={{ tarballs_dir }}/{{ item.fn }} checksum="{{ item.sum }}" force=no
   register: gresult
