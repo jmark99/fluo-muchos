@@ -189,7 +189,7 @@ class BaseConfig(ConfigParser, metaclass=ABCMeta):
         self.checksums_d = None
         self._init_nodes()
 
-    logging.basicConfig(level=logging.DEBUG, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
+    logging.basicConfig(level=logging.INFO, format=">>> %(filename)s:%(funcName)s:%(lineno)d - %(message)s")
 
     def ansible_host_vars(self):
         return dict(
